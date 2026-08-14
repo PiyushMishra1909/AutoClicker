@@ -11,18 +11,18 @@ using namespace std;
 bool waspressed = false;
 bool Working = false;
 
-int startStopKey ;
-int exitKey ;
+int startStopKey;
+int exitKey;
 int clickMode;
 int delay;
 double cps;
 
-
 DWORD downFlag; // MOUSE CLICK PRESSED OR DOWN
 DWORD upFlag;   // MOUSE CLICK PRESSED AGAIN OR UP
 
-void userInstructions() ;
-void defaultKeys() ;
+void userMenu();
+void defaultKeys();
+void configuehotkeys();
 void starting();
 void click();
 double CalculateDelay(double cps);
@@ -30,72 +30,93 @@ double CalculateDelay(double cps);
 map<string, string> Text_Messages = {
     {"Banner", "************************************\n"},
     {"Welcome", "       WELCOME TO AUTOCLICKER       \n"},
-    {"Choice", "Select mouse button [1] Left  [2] Right :- "},
-    {"UserInfo" , "1. Press 1 to set cps"
-                  "2. Press 2 to setup Hotkey"}
-};
-    
-    
-    int main()
+    {"Choice", "Select mouse Click [1] Left  [2] Right :- "},
+    {"UserInfo", "1. Press 1 to set cps"
+                 "2. Press 2 to setup Hotkey"}};
+
+int main()
+{
+    cout << "\033[32m"; // CHANGES THE COLOUR OF TEXT TO GREEN
+
+    userMenu();
+
+    defaultKeys();
+
+    // starting();
+
+    while (true)
     {
-        cout << "\033[32m";     //CHANGES THE COLOUR OF TEXT TO GREEN
-        
+        bool ispressed = GetAsyncKeyState(startStopKey) & 0x8000;
 
-        userInstructions() ;
-        
-        defaultKeys() ;
-
-        starting();
-        
-        while (true)
+        if (ispressed && !waspressed)
         {
-            bool ispressed = GetAsyncKeyState(startStopKey) & 0x8000;
-            
-            if (ispressed && !waspressed)
-            {
-                Working = !Working;
-                cout << "AutoClicker Working\n";
-            }
-            
-            if (Working)
-            {
-                click();
-            }
-            
-            if (GetAsyncKeyState(exitKey) & 0x8000)
-            {
-                cout << "AutoClicker Stopped\n";
-                break;
-            }
-            
-            waspressed = ispressed;
-            
-            Sleep(delay);
+            Working = !Working;
+            cout << "AutoClicker Working\n";
         }
-        
-        return 0;
-    }
-    
-    void defaultKeys() 
-    {
-        startStopKey = VK_F6 ;
-        exitKey = VK_F7 ;
+
+        if (Working)
+        {
+            click();
+        }
+
+        if (GetAsyncKeyState(exitKey) & 0x8000)
+        {
+            cout << "AutoClicker Stopped\n";
+            break;
+        }
+
+        waspressed = ispressed;
+
+        Sleep(delay);
     }
 
-    void userInstructions()
-    {
-        cout << Text_Messages["Banner"];
-        cout << Text_Messages["Welcome"];
-        cout << Text_Messages["Banner"];
-        cout << endl ;
-        cout << "" ;
+    return 0;
+}
 
-        
-    }
-    
-    void starting() // CONTAINS ALL THE INSTRUCTION AND CHOICES
+void defaultKeys()
+{
+    startStopKey = VK_F6;
+    exitKey = VK_F7;
+}
+
+void userMenu()
+{
+    int userchoice;
+
+    cout << Text_Messages["Banner"];
+    cout << Text_Messages["Welcome"];
+    cout << Text_Messages["Banner"];
+    cout << endl;
+    cout << "";
+
+    cout << "-> Choose an option to continue: ";
+    cout << endl;
+    cout << "1. Set click mode\n";
+    cout << "2. Configure hotkeys\n";
+    cout << "3. Exit\n" ;
+
+    cout << "\n-> Enter your choice: ";
+    cin >> userchoice;
+    cout << endl;
+
+    switch (userchoice)
     {
-        bool firstTry = true;
+    case 1:
+        starting();
+        break;
+    case 2:
+        configuehotkeys() ;
+        break ;
+    case 3 :
+        exit(0) ;
+    default:
+        break;
+    }
+}
+
+void starting() // CONTAINS ALL THE INSTRUCTION AND CHOICES
+{
+    bool firstTry = true;
 
     do
     {
@@ -137,6 +158,11 @@ map<string, string> Text_Messages = {
     } while (cps <= 0 || delay <= 10);
 
     cout << "\nPlease press f6 to start!\n";
+}
+
+void configuehotkeys()
+{
+    char userstartkey, userstopkey;
 }
 
 double CalculateDelay(double cps) // CONVERTS CPS INTO MS DELAY
