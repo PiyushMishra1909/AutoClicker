@@ -5,6 +5,7 @@
 #include <chrono>
 #include <map>
 #include <string>
+#include <ctime>
 
 using namespace std;
 
@@ -15,10 +16,12 @@ int startStopKey;
 int exitKey;
 int clickMode;
 int delay;
+int totalClicks = 0;
 double cps;
 
 DWORD downFlag; // MOUSE CLICK PRESSED OR DOWN
-DWORD upFlag;   // MOUSE CLICK PRESSED AGAIN OR UP
+DWORD upFlag;   // MOUSE CLICK released OR UP
+DWORD startTick = 0;
 
 void userMenu();
 void defaultKeys();
@@ -28,9 +31,12 @@ void click();
 double CalculateDelay(double cps);
 
 map<string, string> Text_Messages = {
+
     {"Banner", "************************************\n"},
     {"Welcome", "       WELCOME TO AUTOCLICKER       \n"},
-    {"Choice", "Select mouse Click [1] Left  [2] Right : "}};
+    {"Choice", "Select mouse Click [1] Left  [2] Right : "}
+
+};
 
 int main()
 {
@@ -49,21 +55,28 @@ int main()
             if (Working)
             {
                 cout << "\nAutoClicker Working\n";
+                startTick = GetTickCount();
             }
             else
             {
-                cout << "\nAutoClicker Stopped\n" ;
+                cout << "\nAutoClicker Stopped\n";
             }
         }
 
         if (Working)
         {
             click();
+
+            DWORD elapsedMs = GetTickCount() - startTick ;
+            double elapsedSeconds = elapsedMs / 1000.0 ;
+            
+            cout << "\rClicks: " << totalClicks << "  |  Time: " << elapsedSeconds << "s   " << flush;
+           
         }
 
         if (GetAsyncKeyState(exitKey) & 0x8000)
         {
-            cout << "Exiting...\n";
+            cout << "\nExiting...\n";
             break;
         }
 
@@ -98,7 +111,7 @@ void userMenu()
         cout << endl;
         cout << "1. Set click mode\n";
         cout << "2. Configure hotkeys\n";
-        cout << "3. Exit Usermenu\n";
+        cout << "3. Exit Program\n";
 
         cout << "\n-> Select an option: ";
         cin >> userchoice;
@@ -114,8 +127,9 @@ void userMenu()
             configuehotkeys();
             break;
         case 3:
-            userMenuloop = false;
-            break;
+            // userMenuloop = false;
+            exit(0);
+            // break;
         default:
             cout << "Invalid Choice!\n";
             cout << endl;
@@ -171,15 +185,14 @@ void starting() // CONTAINS ALL THE INSTRUCTION AND CHOICES
 
     if (startStopKey == VK_F6)
     {
-        cout << "\nPlease press f6 to start : " ;
-        cout << endl ;
+        cout << "\nPlease press f6 to start : ";
+        cout << endl;
     }
     else
     {
-        cout << "\nPlease press "<< char(startStopKey) << " to start!";
-        cout << endl ;
+        cout << "\nPlease press " << char(startStopKey) << " to start!";
+        cout << endl;
     }
-    
 }
 
 void configuehotkeys()
@@ -187,8 +200,6 @@ void configuehotkeys()
     bool configureLoop = true;
     int configureChoice;
     char userStart_Stopkey, userExitkey;
-    toupper(userStart_Stopkey);
-    toupper(userExitkey);
 
     while (configureLoop)
     {
@@ -203,13 +214,13 @@ void configuehotkeys()
         case 1:
             cout << "\nSelect Start/Stop key : ";
             cin >> userStart_Stopkey;
-            startStopKey = userStart_Stopkey;
+            startStopKey = toupper(userStart_Stopkey);
             break;
 
         case 2:
             cout << "\nSelect Exit key : ";
             cin >> userExitkey;
-            exitKey = userExitkey;
+            exitKey = toupper(userExitkey);
             break;
         case 3:
             configureLoop = false;
@@ -232,6 +243,8 @@ void click() // TELLS THE OS TO CLICK
 
     input.mi.dwFlags = upFlag;
     SendInput(1, &input, sizeof(INPUT));
+
+    totalClicks++;
 }
 
 double CalculateDelay(double cps) // CONVERTS CPS INTO MS DELAY
